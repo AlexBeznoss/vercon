@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# require "vercon"
+# TODO: change back
+require_relative '../lib/vercon'
+
+cli = Dry::CLI.new(Vercon::CLI)
+
+begin
+  cli.call
+rescue Vercon::Error => e
+  $stderr.puts(e.message) # rubocop:disable Style/StderrPuts
+  exit(1)
+end
