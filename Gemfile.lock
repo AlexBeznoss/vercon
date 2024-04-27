@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    vercon (0.0.2)
+    vercon (0.0.3)
       dry-cli (~> 1.0, < 2)
       dry-files (~> 1.0, < 2)
       httpx (~> 1.2.3)
