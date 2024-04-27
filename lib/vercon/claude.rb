@@ -25,9 +25,7 @@ module Vercon
         tools: tools
       }.reject { |_, v| v.nil? || ["", [], {}].include?(v) }
 
-      client.post("/v1/messages", body: body.to_json).then do |res|
-        prepare_response(res.json)
-      end
+      client.post("/v1/messages", body: body.to_json).then { |res| prepare_response(res.json) }
     end
 
     private
