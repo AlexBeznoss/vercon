@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require 'yaml'
-require 'dry/files'
+require "yaml"
+require "dry/files"
 
 module Vercon
   class Config
@@ -10,9 +10,9 @@ module Vercon
       claude-3-sonnet-20240229
       claude-3-opus-20240229
     ].freeze
-    DEFAULT_CLAUDE_MODEL = 'claude-3-sonnet-20240229'
-    LOWEST_CLAUDE_MODEL = 'claude-3-haiku-20240307'
-    PATH = '~/.vercon.yml'
+    DEFAULT_CLAUDE_MODEL = "claude-3-sonnet-20240229"
+    LOWEST_CLAUDE_MODEL = "claude-3-haiku-20240307"
+    PATH = "~/.vercon.yml"
 
     def initialize
       @files = Dry::Files.new
@@ -25,21 +25,28 @@ module Vercon
       !@config.empty?
     end
 
-    def token
-      @config['claude_token']
-    end
-
-    def token=(value)
-      @config['claude_token'] = value
-      @files.write(@files.expand_path(PATH), YAML.safe_dump(@config))
+    def claude_token
+      @config["claude_token"]
     end
 
     def claude_model
-      @config['claude_model']
+      @config["claude_model"]
     end
 
-    def claude_model=(value)
-      @config['claude_model'] = value
+    def open_by_default?
+      @config["open_by_default"].nil? ? false : @config["open_by_default"]
+    end
+
+    %i[claude_token claude_model open_by_default].each do |method|
+      define_method(:"#{method}=") do |value|
+        @config[method.to_s] = value
+        write_config
+      end
+    end
+
+    private
+
+    def write_config
       @files.write(@files.expand_path(PATH), YAML.safe_dump(@config))
     end
   end

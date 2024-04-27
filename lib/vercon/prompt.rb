@@ -2,11 +2,11 @@
 
 module Vercon
   class Prompt
-    class << self
-      END_SEQUENCE = '<END RESULT>'
+    END_SEQUENCE = "<END RESULT>"
 
+    class << self
       def for_test_path(path:)
-        system_prompt = <<~PROMPT.strip
+        system = <<~PROMPT.strip
           You are tasked as a professional Ruby and Ruby on Rails developer specialising in writing comprehensive RSpec unit tests for a Ruby class. You will receive a path to ruby file. Your objective is to generate a path corresponding RSpec unit test file. Make sure to use common practices used in Ruby on Rails community for structuring test file paths.
 
           Provide a in the following format:
@@ -17,15 +17,15 @@ module Vercon
           Make sure to include "#{END_SEQUENCE}" at the end of your test source code. It's required.
         PROMPT
 
-        user_prompt = <<~PROMPT.strip
+        user = <<~PROMPT.strip
           PATH: #{path.inspect}
         PROMPT
 
-        [system_prompt, user_prompt, END_SEQUENCE]
+        {system: system, user: user, stop_sequences: [END_SEQUENCE]}
       end
 
       def for_test_generation(path:, source:, factories: nil, current_test: nil)
-        system_prompt = <<~PROMPT.strip
+        system = <<~PROMPT.strip
           You are a professional Ruby developer specializing in writing comprehensive RSpec unit tests for a Ruby class. Your objective is to ensure each public method within the class is thoroughly tested. Below are the specifics you must adhere to:
 
           - Structure:
@@ -59,25 +59,18 @@ module Vercon
             - This includes testing with empty or nil values, large or small input values, and any other relevant scenarios specific to the class.
             - Think critically about potential edge cases and ensure they are adequately covered in the tests.
 
-          Provide the result in the following format:
-
-          TEST SOURCE CODE:
-          ```ruby
-          <the RSpec tests, without any additional comments or markdown instructions>
-          ```
-          #{END_SEQUENCE}
-
-          Make sure to include "#{END_SEQUENCE}" at the end of your test source code.
-
           If the user provides "CURRENT RSPEC FILE", use it as a base for your tests, improve it, and extend it according to the Ruby file being tested. Ensure that the existing tests are updated to meet the specified requirements and that new tests are added to achieve comprehensive coverage of the class's public methods.
 
           Remember to focus on testing the behavior of the class rather than its implementation details. Aim for concise, readable, and maintainable tests that provide confidence in the correctness of the class. Use descriptive test names, keep tests isolated from each other, and follow RSpec best practices and conventions throughout your test suite.
+
+          After you have created the RSpec tests for the Ruby class, make sure to call "write_test_file" tool with the test source code.
+          You shouldn't comment your thinking process.
         PROMPT
 
-        user_prompt = ["PATH: #{path.inspect}"]
+        user = ["PATH: #{path.inspect}"]
 
         if factories
-          user_prompt << <<~PROMPT.strip
+          user << <<~PROMPT.strip
             AVAILABLE FACTORIES:
             ```json
             #{JSON.dump(factories)}
@@ -85,7 +78,7 @@ module Vercon
           PROMPT
         end
 
-        user_prompt << <<~PROMPT.strip
+        user << <<~PROMPT.strip
           CODE:
           ```ruby
           #{source}
@@ -93,7 +86,7 @@ module Vercon
         PROMPT
 
         if current_test
-          user_prompt << <<~PROMPT.strip
+          user << <<~PROMPT.strip
             CURRENT RSPEC FILE:
             ```ruby
             #{current_test}
@@ -101,7 +94,24 @@ module Vercon
           PROMPT
         end
 
-        [system_prompt, user_prompt.join("\n"), END_SEQUENCE]
+        tools = [
+          {
+            name: "write_test_file",
+            description: "Tool to write the test file to disk",
+            input_schema: {
+              type: "object",
+              properties: {
+                source_code: {
+                  type: "string",
+                  description: "The source code of the test file to be written to disk. Make sure to include the complete test file content. Do not include any additional information, comments or markup."
+                }
+              },
+              required: ["source_code"]
+            }
+          }
+        ]
+
+        {system: system, user: user.join("\n"), tools: tools}
       end
     end
   end

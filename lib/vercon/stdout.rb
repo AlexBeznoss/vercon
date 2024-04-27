@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'tty-prompt'
+require "tty-prompt"
 
 module Vercon
   class Stdout
@@ -12,7 +12,7 @@ module Vercon
 
     def write(message)
       @stdout.puts(message)
-      @lines += 1
+      @lines += message.count("\n") + 1
     end
 
     def erase(lines: nil)
@@ -23,16 +23,16 @@ module Vercon
     end
 
     %i[ask yes? no? say ok warn error mask select].each do |method|
-      define_method(method) do |*args, &block|
-        @lines += 1
-        @prompt.send(method, *args, &block)
+      define_method(method) do |*args, **params, &block|
+        @lines += args.first.count("\n") + 1
+        @prompt.send(method, *args, **params, &block)
       end
     end
 
     %i[puts print].each do |method|
-      define_method(method) do |*args, &block|
-        @lines += 1
-        @stdout.send(method, *args, &block)
+      define_method(method) do |*args, **params, &block|
+        @lines += args.first.count("\n") + 1
+        @stdout.send(method, *args, **params, &block)
       end
     end
   end
