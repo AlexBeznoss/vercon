@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'vercon/stdout'
+require "vercon/stdout"
 
 RSpec.describe Vercon::Stdout do
   let(:prompt) { instance_double(TTY::Prompt) }
@@ -8,26 +8,32 @@ RSpec.describe Vercon::Stdout do
 
   before { allow(TTY::Prompt).to receive(:new).and_return(prompt) }
 
-  describe '#write' do
-    it 'writes the message to stdout' do
-      expect { stdout.write('Hello') }.to output("Hello\n").to_stdout
+  describe "#write" do
+    it "writes the message to stdout" do
+      expect { stdout.write("Hello") }.to output("Hello\n").to_stdout
     end
 
-    it 'increments the lines count' do
-      expect { stdout.write('Hello') }.to change { stdout.instance_variable_get(:@lines) }.by(1)
+    it "increments the lines count" do
+      expect { stdout.write("Hello") }.to change { stdout.instance_variable_get(:@lines) }.by(1)
+    end
+
+    context "when the message contains multiple lines" do
+      it "increments the lines count accordingly" do
+        expect { stdout.write("Line 1\nLine 2\nLine 3") }.to change { stdout.instance_variable_get(:@lines) }.by(3)
+      end
     end
   end
 
-  describe '#erase' do
-    let(:real_stdout) { double('real_stdout') }
+  describe "#erase" do
+    let(:real_stdout) { double("real_stdout") }
 
     before do
       stdout.instance_variable_set(:@stdout, real_stdout)
       allow(real_stdout).to receive(:print)
     end
 
-    context 'when lines argument is provided' do
-      it 'erases the specified number of lines' do
+    context "when lines argument is provided" do
+      it "erases the specified number of lines" do
         stdout.instance_variable_set(:@lines, 5)
 
         stdout.erase(lines: 3)
@@ -37,8 +43,8 @@ RSpec.describe Vercon::Stdout do
       end
     end
 
-    context 'when lines argument is not provided' do
-      it 'erases all the lines' do
+    context "when lines argument is not provided" do
+      it "erases all the lines" do
         stdout.instance_variable_set(:@lines, 5)
 
         stdout.erase
@@ -47,57 +53,63 @@ RSpec.describe Vercon::Stdout do
         expect(stdout.instance_variable_get(:@lines)).to eq(0)
       end
     end
-  end
 
-  describe '#respond_to_missing?' do
-    context 'when the method is included in PROMPT_METHODS' do
-      it 'returns true' do
-        expect(stdout.respond_to?(:ask)).to be true
-      end
-    end
+    context "when there are no lines to erase" do
+      it "does not erase any lines" do
+        stdout.instance_variable_set(:@lines, 0)
 
-    context 'when the method is included in STDOUT_METHODS' do
-      it 'returns true' do
-        expect(stdout.respond_to?(:puts)).to be true
-      end
-    end
+        stdout.erase
 
-    context 'when the method is not included in PROMPT_METHODS or STDOUT_METHODS' do
-      it 'returns false' do
-        expect(stdout.respond_to?(:unknown_method)).to be false
+        expect(real_stdout).not_to have_received(:print)
+        expect(stdout.instance_variable_get(:@lines)).to eq(0)
       end
     end
   end
 
-  describe '#method_missing' do
-    context 'when the method is included in PROMPT_METHODS' do
-      it 'delegates the method to the prompt instance' do
-        expect(stdout.instance_variable_get(:@prompt)).to receive(:ask).with('Question')
-        stdout.ask('Question')
-      end
+  describe "prompt methods delegation" do
+    %i[ask yes? no? say ok warn error mask select].each do |method|
+      describe "##{method}" do
+        it "delegates the method to the prompt instance" do
+          expect(prompt).to receive(method).with("Question")
+          stdout.send(method, "Question")
+        end
 
-      it 'increments the lines count' do
-        allow(prompt).to receive(:ask)
+        it "increments the lines count" do
+          allow(prompt).to receive(method)
 
-        expect { stdout.ask('Question') }.to change { stdout.instance_variable_get(:@lines) }.by(1)
-        expect(prompt).to have_received(:ask)
+          expect { stdout.send(method, "Question") }.to change { stdout.instance_variable_get(:@lines) }.by(1)
+          expect(prompt).to have_received(method)
+        end
+
+        context "when the message contains multiple lines" do
+          it "increments the lines count accordingly" do
+            allow(prompt).to receive(method)
+
+            expect { stdout.send(method, "Line 1\nLine 2\nLine 3") }.to change { stdout.instance_variable_get(:@lines) }.by(3)
+            expect(prompt).to have_received(method)
+          end
+        end
       end
     end
+  end
 
-    context 'when the method is included in STDOUT_METHODS' do
-      it 'delegates the method to the stdout instance' do
-        expect(stdout.instance_variable_get(:@stdout)).to receive(:puts).with('Message')
-        stdout.puts('Message')
-      end
+  describe "stdout methods delegation" do
+    %i[puts print].each do |method|
+      describe "##{method}" do
+        it "delegates the method to the stdout instance" do
+          expect(stdout.instance_variable_get(:@stdout)).to receive(method).with("Message")
+          stdout.send(method, "Message")
+        end
 
-      it 'increments the lines count' do
-        expect { stdout.puts('Message') }.to change { stdout.instance_variable_get(:@lines) }.by(1)
-      end
-    end
+        it "increments the lines count" do
+          expect { stdout.send(method, "Message") }.to change { stdout.instance_variable_get(:@lines) }.by(1)
+        end
 
-    context 'when the method is not included in PROMPT_METHODS or STDOUT_METHODS' do
-      it 'raises NoMethodError' do
-        expect { stdout.unknown_method }.to raise_error(NoMethodError)
+        context "when the message contains multiple lines" do
+          it "increments the lines count accordingly" do
+            expect { stdout.send(method, "Line 1\nLine 2\nLine 3") }.to change { stdout.instance_variable_get(:@lines) }.by(3)
+          end
+        end
       end
     end
   end

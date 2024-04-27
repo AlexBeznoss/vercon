@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'dry/files'
-require 'prism'
+require "dry/files"
+require "prism"
 
 module Vercon
   class Factories
-    PATH = './spec/factories'
+    PATH = "./spec/factories"
 
     def initialize
       @files = Dry::Files.new
@@ -14,7 +14,7 @@ module Vercon
     def load
       return unless @files.directory?(PATH)
 
-      Dir[@files.expand_path(@files.join(PATH, '**', '*.rb'))].map do |file_path|
+      Dir[@files.expand_path(@files.join(PATH, "**", "*.rb"))].map do |file_path|
         load_factory(file_path)
       end.flatten.compact
     end

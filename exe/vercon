@@ -3,7 +3,7 @@
 
 # require "vercon"
 # TODO: change back
-require_relative '../lib/vercon'
+require_relative "../lib/vercon"
 
 cli = Dry::CLI.new(Vercon::CLI)
 

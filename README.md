@@ -1,34 +1,44 @@
 # Vercon
 
-TODO: Delete this and the text below, and describe your gem
+Vercon - a handy little gem that takes the pain out of writing tests for your Ruby projects. 🔥
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/vercon`. To experiment with that code, run `bin/console` for an interactive prompt.
+The name Vercon comes from the Latin "verum conantur", meaning "they strive for truth". Vercon automatically generate test files and even though they will not always will be perfect, but at least it will save some time writting them manually.
 
-## Installation
+It's build on top of Claude 3. It sends the source code of the Ruby file alongside with available factory names and current test file (in case one exists).
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Claude analyzes your code to understand how it works, then uses that knowledge to put together relevant tests. 
 
-Install the gem and add to the application's Gemfile by executing:
+Just let the AI handle the tedious test writing for you 🚀 
 
-    $ bundle add UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+Give Vercon a try and save yourself some time and headaches when it comes to testing your Ruby apps. 
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+Easy, efficient, no fuss 👌
 
-    $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
+## How to use
 
-## Usage
+Install the gem by executing:
 
-TODO: Write usage instructions here
+    $ gem install vercon
+
+It will require from you Claude Api Token so greb it from [here](https://console.anthropic.com/settings/keys)
+
+Initialize the gem by executing:
+
+    $ vercon init
+
+Generate test:
+
+    $ vercon generate <relative ruby file path>
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`. 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/vercon.
+Bug reports and pull requests are welcome on GitHub at [vercon repo](https://github.com/AlexBeznoss/vercon).
 
 ## License
 
